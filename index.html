@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinema</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231a1a18'/><text x='16' y='23' font-size='18' text-anchor='middle' fill='white'>🎬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg-primary:#ffffff;--bg-secondary:#f7f7f6;--bg-tertiary:#f0eeeb;
+  --text-primary:#1a1a18;--text-secondary:#6b6b67;--text-tertiary:#9c9c97;
+  --border-light:rgba(0,0,0,0.08);--border-medium:rgba(0,0,0,0.15);--border-strong:rgba(0,0,0,0.25);
+  --green-bg:#EAF3DE;--green-text:#3B6D11;--green-dot:#639922;
+  --yellow-bg:#FAEEDA;--yellow-text:#854F0B;--yellow-dot:#BA7517;
+  --red-bg:#FCEBEB;--red-text:#A32D2D;--red-dot:#A32D2D;
+  --blue-bg:#E6F1FB;--blue-text:#0C447C;
+  --purple-bg:#EEEDFE;--purple-text:#3C3489;
+  --teal-bg:#E1F5EE;--teal-text:#085041;
+  --amber-bg:#FAEEDA;--amber-text:#633806;
+  --radius-sm:5px;--radius-md:8px;--radius-lg:12px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+@media(prefers-color-scheme:dark){:root:not(.light){
+  --bg-primary:#1c1c1a;--bg-secondary:#242422;--bg-tertiary:#141412;
+  --text-primary:#f0eeeb;--text-secondary:#9c9c97;--text-tertiary:#6b6b67;
+  --border-light:rgba(255,255,255,0.07);--border-medium:rgba(255,255,255,0.12);--border-strong:rgba(255,255,255,0.2);
+  --green-bg:#1a2e0a;--green-text:#97C459;
+  --yellow-bg:#2a1e08;--yellow-text:#EF9F27;
+  --red-bg:#2a0f0f;--red-text:#F09595;
+  --blue-bg:#071e35;--blue-text:#85B7EB;
+  --purple-bg:#16143a;--purple-text:#AFA9EC;
+  --teal-bg:#062018;--teal-text:#5DCAA5;
+  --amber-bg:#2a1a05;--amber-text:#FAC775;
+}}
+html.dark:root{
+  --bg-primary:#1c1c1a;--bg-secondary:#242422;--bg-tertiary:#141412;
+  --text-primary:#f0eeeb;--text-secondary:#9c9c97;--text-tertiary:#6b6b67;
+  --border-light:rgba(255,255,255,0.07);--border-medium:rgba(255,255,255,0.12);--border-strong:rgba(255,255,255,0.2);
+  --green-bg:#1a2e0a;--green-text:#97C459;
+  --yellow-bg:#2a1e08;--yellow-text:#EF9F27;
+  --red-bg:#2a0f0f;--red-text:#F09595;
+  --blue-bg:#071e35;--blue-text:#85B7EB;
+  --purple-bg:#16143a;--purple-text:#AFA9EC;
+  --teal-bg:#062018;--teal-text:#5DCAA5;
+  --amber-bg:#2a1a05;--amber-text:#FAC775;
+}
+html.light:root{
+  --bg-primary:#ffffff;--bg-secondary:#f7f7f6;--bg-tertiary:#f0eeeb;
+  --text-primary:#1a1a18;--text-secondary:#6b6b67;--text-tertiary:#9c9c97;
+  --border-light:rgba(0,0,0,0.08);--border-medium:rgba(0,0,0,0.15);--border-strong:rgba(0,0,0,0.25);
+  --green-bg:#EAF3DE;--green-text:#3B6D11;--green-dot:#639922;
+  --yellow-bg:#FAEEDA;--yellow-text:#854F0B;--yellow-dot:#BA7517;
+  --red-bg:#FCEBEB;--red-text:#A32D2D;--red-dot:#A32D2D;
+  --blue-bg:#E6F1FB;--blue-text:#0C447C;
+  --purple-bg:#EEEDFE;--purple-text:#3C3489;
+  --teal-bg:#E1F5EE;--teal-text:#085041;
+  --amber-bg:#FAEEDA;--amber-text:#633806;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:14px;color:var(--text-primary);background:var(--bg-tertiary);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+
+/* Sidebar */
+.sidebar{width:210px;flex-shrink:0;background:var(--bg-primary);border-right:0.5px solid var(--border-light);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{padding:16px 16px 14px;border-bottom:0.5px solid var(--border-light)}
+.sidebar-logo .app-name{font-size:13px;font-weight:500}
+.sidebar-logo .app-sub{font-size:11px;color:var(--text-tertiary);margin-top:2px}
+.sec-label{font-size:10px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;padding:12px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:13px;cursor:pointer;color:var(--text-secondary);transition:background .1s;border:none;background:none;width:100%;text-align:left;font-family:var(--font)}
+.nav-item:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.nav-item.active{color:var(--text-primary);background:var(--bg-secondary);font-weight:500}
+.nav-item i{font-size:15px;flex-shrink:0}
+.nav-divider{height:0.5px;background:var(--border-light);margin:6px 0}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.topbar{background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+.topbar-title{font-size:13px;color:var(--text-secondary);margin-left:auto;white-space:nowrap;flex-shrink:0}
+.search-wrap{position:relative;min-width:120px;max-width:220px;flex:1}
+.search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);font-size:14px;pointer-events:none}
+.search-wrap input{width:100%;padding:6px 9px 6px 30px;border:0.5px solid var(--border-medium);border-radius:var(--radius-md);font-size:13px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font);outline:none}
+select{padding:6px 9px;border:0.5px solid var(--border-medium);border-radius:var(--radius-md);font-size:12px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font);cursor:pointer;outline:none;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border:0.5px solid var(--border-medium);border-radius:var(--radius-md);font-size:13px;cursor:pointer;background:transparent;color:var(--text-primary);transition:background .1s;white-space:nowrap;font-family:var(--font);flex-shrink:0}
+.btn:not(.btn-primary):hover{background:var(--bg-secondary)}
+.btn-primary{background:var(--text-primary);color:var(--bg-primary);border-color:var(--text-primary)}
+.btn-primary:hover{opacity:.85;background:var(--text-primary)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.content{flex:1;display:flex;flex-direction:column;min-height:0}
+.view-tab{display:none;flex:1;flex-direction:column;min-height:0}.view-tab.active{display:flex}
+
+/* Table */
+.table-wrap{flex:1;display:flex;flex-direction:column;margin:14px 16px;background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);min-height:0;overflow:hidden}
+.table-header{flex-shrink:0;overflow:hidden;background:var(--bg-secondary)}
+.table-scroll{flex:1;overflow-y:auto;overflow-x:hidden;min-height:0}
+table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+th{font-size:10px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;padding:8px 8px;text-align:left;border-bottom:0.5px solid var(--border-light);background:var(--bg-secondary);white-space:nowrap;user-select:none;overflow:hidden}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--text-primary)}
+th .sort-icon{opacity:.4;font-size:11px;margin-left:3px}
+th.sort-asc .sort-icon::after{content:'↑'}
+th.sort-desc .sort-icon::after{content:'↓'}
+th:not(.sort-asc):not(.sort-desc) .sort-icon::after{content:'↕'}
+/* Resize handle */
+.th-inner{display:flex;align-items:center;gap:2px}
+.resize-handle{position:absolute;right:0;top:0;width:5px;height:100%;cursor:col-resize;background:transparent;z-index:3}
+.resize-handle:hover{background:var(--border-medium)}
+td{padding:8px 8px;font-size:13px;border-bottom:0.5px solid var(--border-light);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary);max-width:0}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg-secondary)}
+.unseen-row td{color:var(--text-tertiary)}
+
+/* Badges */
+.badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:500}
+.b-intl{background:var(--blue-bg);color:var(--blue-text)}
+.b-falado{background:var(--purple-bg);color:var(--purple-text)}
+.b-short{background:var(--teal-bg);color:var(--teal-text)}
+.b-personal{background:var(--amber-bg);color:var(--amber-text)}
+/* Section year — plain text, no box */
+.yr-label{font-size:11px;margin-left:3px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot-green{background:var(--green-dot)}.dot-yellow{background:var(--yellow-dot)}.dot-red{background:var(--red-dot)}.dot-unseen{background:var(--border-medium)}
+.tag-urgent{background:var(--red-bg);color:var(--red-text);font-weight:500}
+.tag-approved{background:var(--green-bg);color:var(--green-text);font-weight:500}
+.tag-viewed{background:var(--bg-secondary);color:var(--text-secondary)}
+.flag-cell{font-size:15px;letter-spacing:1px;line-height:1}
+.row-actions{display:flex;gap:4px;visibility:hidden}
+tr:hover .row-actions{visibility:visible}
+.icon-btn{background:none;border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:2px 6px;cursor:pointer;font-size:12px;color:var(--text-secondary)}
+.icon-btn:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.empty{text-align:center;padding:48px 20px;color:var(--text-tertiary)}
+.empty i{font-size:36px;display:block;margin-bottom:10px}
+
+/* Scroll panels */
+.scroll-panel{flex:1;overflow-y:auto;padding:14px 16px}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg-primary);border-radius:var(--radius-lg);border:0.5px solid var(--border-medium);padding:24px;width:540px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:16px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--text-secondary);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field textarea,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--border-medium);border-radius:var(--radius-md);font-size:13px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font);outline:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--border-strong)}
+.field textarea{resize:vertical;min-height:60px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.colour-row{display:flex;gap:8px}
+.colour-btn{flex:1;padding:7px 4px;border-radius:var(--radius-md);border:2px solid transparent;cursor:pointer;font-size:12px;font-weight:500;text-align:center;transition:border-color .1s;font-family:var(--font)}
+.colour-btn.green{background:var(--green-bg);color:var(--green-text)}
+.colour-btn.yellow{background:var(--yellow-bg);color:var(--yellow-text)}
+.colour-btn.red{background:var(--red-bg);color:var(--red-text)}
+.colour-btn.selected{border-color:currentColor}
+.tag-btn{padding:6px 14px;border-radius:var(--radius-md);border:2px solid transparent;cursor:pointer;font-size:12px;font-weight:500;text-align:center;font-family:var(--font);background:var(--bg-secondary);color:var(--text-secondary)}
+.tag-btn.urgent{background:var(--red-bg);color:var(--red-text)}
+.tag-btn.approved{background:var(--green-bg);color:var(--green-text)}
+.tag-btn.selected{border-color:currentColor}
+.rating-row{display:flex;gap:5px;flex-wrap:wrap}
+.rating-btn{width:30px;height:30px;border-radius:var(--radius-md);border:0.5px solid var(--border-medium);cursor:pointer;font-size:12px;font-weight:500;background:transparent;color:var(--text-secondary);transition:all .1s;font-family:var(--font)}
+.rating-btn:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.rating-btn.selected{background:var(--text-primary);color:var(--bg-primary);border-color:var(--text-primary)}
+.ec-hint{font-size:11px;color:var(--text-tertiary);margin-top:5px}
+
+/* Import */
+.import-tabs{display:flex;margin-bottom:18px;border:0.5px solid var(--border-medium);border-radius:var(--radius-md);overflow:hidden;width:fit-content}
+.import-tab{padding:7px 18px;font-size:13px;cursor:pointer;background:transparent;border:none;color:var(--text-secondary);font-family:var(--font);transition:background .1s}
+.import-tab.active{background:var(--text-primary);color:var(--bg-primary);font-weight:500}
+.import-tab:hover:not(.active){background:var(--bg-secondary)}
+.import-zone{border:1.5px dashed var(--border-medium);border-radius:var(--radius-lg);padding:32px;text-align:center;color:var(--text-secondary);cursor:pointer;transition:border-color .15s}
+.import-zone:hover,.import-zone.drag-over{border-color:var(--border-strong)}
+.import-zone i{font-size:32px;margin-bottom:10px;display:block;color:var(--text-tertiary)}
+.map-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.map-table td{padding:5px 6px;border-bottom:0.5px solid var(--border-light)}
+.map-table td:first-child{color:var(--text-secondary);width:140px;font-size:12px}
+.map-table th{padding:5px 6px;font-size:10px;text-align:left;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border-light)}
+.map-table select{width:100%;padding:4px 7px;font-size:12px}
+.data-panel{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:18px;margin-bottom:14px}
+.data-panel h4{font-size:13px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.data-panel p{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px}
+.notice{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:10px 14px;font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.notice i{flex-shrink:0;margin-top:1px;font-size:15px;color:var(--text-tertiary)}
+.xlsx-preview{background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px 14px;font-size:12px;color:var(--text-secondary);margin-top:12px;line-height:1.8}
+.xlsx-preview strong{color:var(--text-primary);font-weight:500}
+.progress-bar-wrap{background:var(--border-light);border-radius:4px;height:4px;margin-top:10px;overflow:hidden;display:none}
+.progress-bar{height:100%;background:var(--text-primary);border-radius:4px;transition:width .2s}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div class="sidebar-logo"><div class="app-name" style="font-size:14px">Cinema</div></div>
+  <button class="nav-item" onclick="showView('all')" id="n-all" style="font-weight:500;padding:10px 16px"><i class="ti ti-list"></i> <span data-t="all_films">Todos os filmes</span></button>
+  <div class="nav-divider"></div>
+  <div class="sec-label" data-t="jury_2026">2026 — JÚRI</div>
+  <button class="nav-item" onclick="setSection('2026','International')" id="n-2026-International"><i class="ti ti-world"></i> <span data-t="International">Internacional</span></button>
+  <button class="nav-item" onclick="setSection('2026','Short/Medium')" id="n-2026-Short/Medium"><i class="ti ti-clock"></i> <span data-t="short_medium">Curta / Média</span></button>
+  <div class="nav-divider"></div>
+  <div class="sec-label" data-t="jury_2025">2025 — JÚRI</div>
+  <button class="nav-item" onclick="setSection('2025','International')" id="n-2025-International"><i class="ti ti-world"></i> International</button>
+  <button class="nav-item" onclick="setSection('2025','Cinema Falado')" id="n-2025-Cinema Falado"><i class="ti ti-microphone"></i> <span data-t="Cinema Falado">Cinema Falado</span></button>
+  <button class="nav-item" onclick="setSection('2025','Short/Medium')" id="n-2025-Short/Medium"><i class="ti ti-clock"></i> Short / Medium</button>
+  <div class="nav-divider"></div>
+  <div class="sec-label" data-t="personal">Pessoal</div>
+  <button class="nav-item" onclick="setSection('personal','Cinema')" id="n-personal-Cinema"><i class="ti ti-ticket"></i> <span data-t="cinema_outings">Saídas ao Cinema</span></button>
+  <div class="nav-divider"></div>
+  <div class="sec-label" data-t="tools">Ferramentas</div>
+  <button class="nav-item" onclick="showView('import')" id="n-import"><i class="ti ti-upload"></i> <span data-t="import">Importar</span></button>
+  <button class="nav-item" onclick="showView('data')" id="n-data"><i class="ti ti-database"></i> <span data-t="data_backup">Dados & Cópia</span></button>
+  <div class="nav-divider"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px">
+    <div class="sec-label" style="padding:0" data-t="meetings">Reuniões</div>
+    <button onclick="openMeetingModal()" class="icon-btn" style="border:none;padding:2px 4px" title="Adicionar reunião"><i class="ti ti-plus" style="font-size:14px"></i></button>
+  </div>
+  <div id="sidebar-meetings-list" style="flex:1;overflow-y:auto;padding:0 8px 4px"></div>
+  <div style="margin-top:auto;padding:10px 12px 4px;display:flex;gap:6px;border-top:0.5px solid var(--border-light)">
+    <button onclick="toggleTheme()" id="theme-btn" class="btn btn-sm" style="flex:1;justify-content:center;font-size:15px" title="Toggle light/dark"></button>
+    <button onclick="toggleLang()" id="lang-btn" class="btn btn-sm" style="flex:1;justify-content:center;font-size:11px;font-weight:500;letter-spacing:.04em" title="Toggle language"></button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="search-wrap"><i class="ti ti-search"></i><input type="text" placeholder="Search…" id="search-input" oninput="renderTable();updateClearBtn()"></div>
+    <select id="filter-watched" onchange="renderTable();updateClearBtn()">
+      <option value="" data-t="filter_all_films">Todos</option><option value="yes" data-t="filter_watched">Vistos</option><option value="no" data-t="filter_not_watched">Não vistos</option>
+    </select>
+    <select id="filter-colour" onchange="renderTable();updateClearBtn()">
+      <option value="" data-t="filter_all_verdicts">Todos os veredictos</option><option value="green" data-t="filter_fits">🟢 Adequado</option><option value="yellow" data-t="filter_unclear">🟡 Incerto</option><option value="red" data-t="filter_unfit">🔴 Inadequado</option>
+    </select>
+    <select id="filter-tag" onchange="renderTable();updateClearBtn()">
+      <option value="" data-t="filter_all_tags">Todas as etiquetas</option><option value="urgent" data-t="tag_urgent">Urgente</option><option value="approved" data-t="tag_approved">Aprovado</option><option value="viewed by others" data-t="tag_viewed_others">Visto por outros</option>
+    </select>
+    <button class="btn" onclick="clearFilters()" id="btn-clear-filters" style="display:none"><i class="ti ti-x"></i> <span data-t="clear_filters">Limpar filtros</span></button>
+    <button class="btn" onclick="openAddModal()"><i class="ti ti-plus"></i> <span data-t="add_film">Adicionar filme</span></button>
+    <span class="topbar-title" id="view-title"></span>
+  </div>
+
+  <div class="content">
+    <div class="view-tab active" id="view-library">
+      <div class="table-wrap">
+        <div class="table-header" id="table-header">
+          <table id="header-table">
+            <colgroup id="col-group-header"></colgroup>
+            <thead><tr id="thead-row"></tr></thead>
+          </table>
+        </div>
+        <div class="table-scroll" id="table-scroll">
+          <table id="main-table">
+            <colgroup id="col-group"></colgroup>
+            <tbody id="films-tbody"></tbody>
+          </table>
+          <div class="empty" id="empty-state" style="display:none"><i class="ti ti-movie-off"></i><span data-t="no_films">Nenhum filme encontrado.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-tab" id="view-meetings">
+      <div style="flex:1;overflow-y:auto;padding:14px 16px">
+        <div style="max-width:520px">
+          <button class="btn btn-primary" onclick="openMeetingModal()" style="margin-bottom:24px"><i class="ti ti-plus"></i> <span data-t="add_meeting">Adicionar reunião</span></button>
+          <div style="font-size:10px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px" data-t="meetings">Reuniões</div>
+          <div id="meetings-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-tab" id="view-import">
+      <div class="scroll-panel"><div style="max-width:560px">
+        <div class="import-tabs">
+          <button class="import-tab active" onclick="switchImportTab('xlsx')" id="tab-xlsx"><i class="ti ti-table" style="font-size:13px;margin-right:4px"></i> <span data-t_raw="Excel (.xlsx)">Excel (.xlsx)</span></button>
+          <button class="import-tab" onclick="switchImportTab('csv')" id="tab-csv"><i class="ti ti-file-text" style="font-size:13px;margin-right:4px"></i> CSV</button>
+        </div>
+        <div id="import-xlsx-panel">
+          <p style="color:var(--text-secondary);margin-bottom:14px;font-size:13px"><span data-t="import_xlsx_hint">Coloca aqui a folha de cálculo do festival. Coluna EC = a tua nota.</span></p>
+          <div class="import-zone" id="drop-zone-xlsx" onclick="document.getElementById('xlsx-file').click()">
+            <i class="ti ti-table"></i>
+            <div style="font-weight:500;margin-bottom:4px">Drop .xlsx here or click to browse</div>
+            <div style="font-size:12px">Festival spreadsheet — sheet auto-detected</div>
+          </div>
+          <input type="file" id="xlsx-file" accept=".xlsx,.xls" style="display:none" onchange="handleXlsx(this)">
+          <div id="xlsx-preview" style="display:none" class="xlsx-preview"></div>
+          <div id="xlsx-config" style="display:none;margin-top:14px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field" style="flex:1;min-width:120px;margin:0"><label data-t="festival_year">Ano do festival</label><select id="xlsx-year"><option>2026</option><option selected>2025</option></select></div>
+              <div class="field" style="flex:1;min-width:160px;margin:0"><label data-t="competition">Competição</label><select id="xlsx-competition"><option>International</option><option>Cinema Falado</option><option>Short/Medium</option></select></div>
+              <div class="field" style="flex:1;min-width:180px;margin:0"><label data-t="import_mode">Modo de importação</label><select id="xlsx-mode"><option value="watched" data-t="import_mode_watched">Só os que vi (EC)</option><option value="all" data-t="import_mode_all">Todos os filmes</option></select></div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+              <button class="btn btn-primary" onclick="doXlsxImport()"><i class="ti ti-database-import"></i> <span data-t="import_btn">Importar</span></button>
+              <button class="btn" onclick="resetXlsxImport()" data-t="cancel">Cancelar</button>
+            </div>
+            <div class="progress-bar-wrap" id="xlsx-progress-wrap"><div class="progress-bar" id="xlsx-progress" style="width:0%"></div></div>
+            <div id="xlsx-result" style="margin-top:10px;font-size:13px"></div>
+          </div>
+        </div>
+        <div id="import-csv-panel" style="display:none">
+          <p style="color:var(--text-secondary);margin-bottom:6px;font-size:13px">Import a CSV. The <strong>EC column</strong> — a number = watched.</p>
+          <div class="import-zone" id="drop-zone-csv" onclick="document.getElementById('csv-file').click()">
+            <i class="ti ti-file-text"></i>
+            <div style="font-weight:500;margin-bottom:4px">Drop CSV here or click to browse</div>
+            <div style="font-size:12px">UTF-8 .csv</div>
+          </div>
+          <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleCSV(this)">
+          <div id="mapping-area" style="display:none;margin-top:18px">
+            <div style="font-weight:500;font-size:13px;margin-bottom:2px" id="csv-filename"></div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px" id="csv-summary"></div>
+            <table class="map-table" id="map-table"></table>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field" style="flex:1;min-width:120px;margin:0"><label data-t="festival_year">Ano do festival</label><select id="import-year"><option>2026</option><option>2025</option></select></div>
+              <div class="field" style="flex:1;min-width:160px;margin:0"><label data-t="competition">Competição</label><select id="import-competition"><option>International</option><option>Cinema Falado</option><option>Short/Medium</option></select></div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="doCSVImport()"><i class="ti ti-database-import"></i> Import</button>
+              <button class="btn" onclick="resetCSVImport()">Cancel</button>
+            </div>
+            <div id="import-result" style="margin-top:10px;font-size:13px"></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="view-tab" id="view-data">
+      <div class="scroll-panel"><div style="max-width:520px">
+        <div class="notice"><i class="ti ti-info-circle"></i><div><span data-t="data_notice">Os dados vivem no teu browser. Exporta regularmente um backup JSON.</span></div></div>
+        <div class="data-panel">
+          <h4><i class="ti ti-download" style="font-size:15px"></i> <span data-t="export_backup">Exportar cópia de segurança</span></h4>
+          <p><span data-t="export_desc">JSON preserva tudo. CSV é útil para Excel.</span></p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <select id="export-section" style="flex:1;min-width:180px">
+              <option value="" data-t="full_library">Biblioteca completa</option>
+              <option value="2026|International">2026 International</option>
+              <option value="2026|Short/Medium">2026 Short/Medium</option>
+              <option value="2025|International">2025 International</option>
+              <option value="2025|Cinema Falado">2025 Cinema Falado</option>
+              <option value="2025|Short/Medium">2025 Short/Medium</option>
+              <option value="personal|Cinema">Personal — Cinema</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="exportJSON()"><i class="ti ti-download"></i> JSON</button>
+            <button class="btn btn-sm" onclick="exportCSVData()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
+          </div>
+          <div id="export-info" style="margin-top:8px;font-size:12px;color:var(--text-secondary)"></div>
+        </div>
+        <div class="data-panel">
+          <h4><i class="ti ti-upload" style="font-size:15px"></i> <span data-t="restore_backup">Restaurar cópia</span></h4>
+          <p><span data-t="restore_desc">Fusão adiciona novos filmes; Substituir apaga tudo.</span></p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-sm" onclick="document.getElementById('restore-file').click()"><i class="ti ti-folder-open"></i><span data-t="choose_json">Escolher ficheiro JSON</span></button>
+            <select id="restore-mode" style="flex:1;min-width:160px"><option value="merge" data-t="merge">Fusão</option><option value="replace" data-t="replace_all">Substituir tudo</option></select>
+          </div>
+          <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreJSON(this)">
+          <div id="restore-info" style="margin-top:8px;font-size:12px;color:var(--text-secondary)"></div>
+        </div>
+        <div class="data-panel">
+          <h4><i class="ti ti-chart-bar" style="font-size:15px"></i> <span data-t="library_overview">Resumo da biblioteca</span></h4>
+          <div id="global-stats" style="font-size:13px;color:var(--text-secondary);line-height:2"></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Meeting modal -->
+<div class="modal-bg" id="meeting-modal">
+<div class="modal" style="width:400px">
+  <h3 id="meeting-modal-title">Add meeting</h3>
+  <input type="hidden" id="meeting-edit-id">
+  <div class="g2">
+    <div class="field"><label data-t="date">Data</label><input type="date" id="m-date"></div>
+    <div class="field"><label data-t="time">Hora</label><input type="time" id="m-time"></div>
+    <div class="field" style="grid-column:1/-1"><label data-t="meeting_note">Nota</label><textarea id="m-note" rows="3" placeholder="Agenda, location, topic…"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+    <button class="btn" onclick="closeMeetingModal()" data-t="cancel">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveMeeting()" data-t="save">Guardar</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="film-modal">
+<div class="modal">
+  <h3 id="modal-title">Add film</h3>
+  <input type="hidden" id="edit-id">
+  <div class="g2">
+    <div class="field" style="grid-column:1/-1"><label data-t="title">Título</label><input type="text" id="f-title"></div>
+    <div class="field"><label data-t="director">Realizador</label><input type="text" id="f-director"></div>
+    <div class="field"><label data-t="country">País</label><input type="text" id="f-country"></div>
+    <div class="field"><label data-t="duration_min">Duração (min)</label><input type="number" id="f-duration" min="1"></div>
+    <div class="field"><label data-t="prod_year">Ano de produção</label><input type="number" id="f-year" min="1900" max="2030"></div>
+    <div class="field"><label data-t="fest_year">Ano do festival</label><select id="f-festyear" onchange="onFestYearChange()"><option value="2026">2026</option><option value="2025">2025</option><option value="personal" data-t="personal_badge">Pessoal</option></select></div>
+    <div class="field" id="comp-field"><label data-t="comp_label">Competição</label><select id="f-competition"><option value="" data-t="none">— nenhuma —</option><option>International</option><option>Cinema Falado</option><option>Short/Medium</option></select></div>
+    <div class="field"><label data-t="category">Categoria</label><input type="text" id="f-category"></div>
+    <div class="field" id="venue-field" style="display:none;grid-column:1/-1"><label data-t="venue">Sala de cinema</label><input type="text" id="f-venue" list="venue-suggestions"><datalist id="venue-suggestions"></datalist></div>
+    <div class="field" style="grid-column:1/-1"><label data-t="synopsis">Sinopse</label><textarea id="f-synopsis" rows="2"></textarea></div>
+    <div class="field" style="grid-column:1/-1"><label data-t="viewing_date">Data de visionamento</label><input type="date" id="f-date"></div>
+    <div class="field" style="grid-column:1/-1" id="jury-fields">
+      <label>Verdict</label>
+      <div class="colour-row">
+        <div class="colour-btn green" onclick="selectColour('green')" id="cb-green"><span data-t="fits">🟢 Adequado</span></div>
+        <div class="colour-btn yellow" onclick="selectColour('yellow')" id="cb-yellow"><span data-t="unclear">🟡 Incerto</span></div>
+        <div class="colour-btn red" onclick="selectColour('red')" id="cb-red"><span data-t="unfit">🔴 Inadequado</span></div>
+      </div>
+      <div style="margin-top:12px"><label style="display:block;font-size:11px;color:var(--text-secondary);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.05em">Rating / EC (1–10)</label>
+        <div class="rating-row" id="rating-row"></div>
+        <div class="ec-hint">A rating marks the film as watched.</div>
+      </div>
+      <div style="margin-top:12px"><label style="display:block;font-size:11px;color:var(--text-secondary);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.05em">Tags</label>
+        <div style="display:flex;gap:8px">
+          <div class="tag-btn urgent" onclick="toggleTag('urgent')" id="tb-urgent">🔴 Urgent</div>
+          <div class="tag-btn approved" onclick="toggleTag('approved')" id="tb-approved">🟢 Approved</div>
+        </div>
+      </div>
+    </div>
+    <div class="field" style="grid-column:1/-1"><label data-t="note">Nota</label><textarea id="f-note" rows="2"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+    <button class="btn" onclick="closeModal()" data-t="cancel">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveFilm()" data-t="save">Guardar</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const DB_KEY='jt4_films';
+const SKIP_PEOPLE_ALL=new Set(['alexandra joão martins','daniel ribas','luís lima','rachel a. rakes','joana gusmão','murtada elfadl','mónica lemos','monica lemos']);
+const MY_SECTIONS=new Set(['ec','eduardo cruz','eduardo leitão cruz','eduardo']);
+const MY_SECTION_STOP=new Set(['total','média','media','médi']);
+const RESUME_TRIGGERS=['filmes distribuídos em portugal','films distributed in portugal','filmes distribuidos'];
+const STRUCTURAL_C=new Set(['filme','title','#','con.','']);
+const KNOWN_CSV={title:['title','film','name','film title','titulo','titre'],director:['director','dir','directed by','realizador'],country:['country','pais','pays'],duration:['duration','runtime','length','dur','min'],year:['year','ano','production year'],competition:['competition','section','competição'],category:['category','type','genre','categoria'],synopsis:['synopsis','description','sinopse'],date:['viewing date','date seen','date watched','data','date'],ec:['ec','nota ec','my rating']};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let films=[],csvRows=[],csvHeaders=[],colourSel='',ratingSel=0,tagsSel=[];
+let currentYear='2026',currentComp='International';
+let xlsxWorkbook=null,xlsxSheetName=null;
+let sortCol=null,sortDir=1; // 1=asc, -1=desc
+
+// Column definitions: key, label, width(px), sortable, personal-visible
+const COLS_JURY=[
+  {key:'section',    label:'Section',  width:110, sort:true,  personal:true},
+  {key:'watched',    label:'',         width:36,  sort:true,  personal:false},
+  {key:'title',      label:'Title',    width:220, sort:true,  personal:true},
+  {key:'director',   label:'Director', width:150, sort:true,  personal:true},
+  {key:'country',    label:'',         width:70,  sort:true,  personal:true},
+  {key:'year',       label:'Year',     width:50,  sort:true,  personal:true},
+  {key:'duration',   label:'Dur.',     width:48,  sort:true,  personal:false},
+  {key:'rating',     label:'Rating',   width:58,  sort:true,  personal:false},
+
+  {key:'tags',       label:'Tags',     width:130, sort:false, personal:false},
+  {key:'venue',      label:'Venue',    width:130, sort:true,  personal:true, juryHide:true},
+  {key:'actions',    label:'',         width:56,  sort:false, personal:true},
+];
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function save(){try{localStorage.setItem(DB_KEY,JSON.stringify(films))}catch(e){alert('Storage full — export a backup first.');}}
+function load(){
+  try{
+    let raw=localStorage.getItem(DB_KEY);
+    if(!raw||raw==='[]') raw=localStorage.getItem('jt3_films')||localStorage.getItem('jt2_films')||localStorage.getItem('jt_films');
+    films=JSON.parse(raw||'[]');
+    if(films.length>0)save();
+  }catch(e){films=[];}
+}
+function isWatched(f){return f.festyear==='personal'?!!f.date:(f.rating>0)}
+function knownVenues(){return[...new Set(films.filter(f=>f.festyear==='personal'&&f.venue).map(f=>f.venue.trim()))].sort()}
+function updateVenueSuggestions(){document.getElementById('venue-suggestions').innerHTML=knownVenues().map(v=>`<option value="${v}">`).join('')}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function setSection(yr,comp){
+  currentYear=yr;currentComp=comp;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('n-'+yr+'-'+comp);if(el)el.classList.add('active');
+  const isPersonal=(yr==='personal');
+  document.getElementById('filter-colour').style.display=isPersonal?'none':'';
+  document.getElementById('filter-tag').style.display=isPersonal?'none':'';
+  buildTableHeader();
+  showTab('library');renderTable();
+}
+function showView(v){
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('n-'+v);if(el)el.classList.add('active');
+  if(v==='all'){
+    currentYear='';currentComp='';
+    document.getElementById('filter-colour').style.display='';
+    document.getElementById('filter-tag').style.display='';
+    buildTableHeader();showTab('library');renderTable();
+    const tot=films.length;
+    const watched=films.filter(isWatched).length;
+    document.getElementById('view-title').textContent=`${t('all_films')} (${watched}/${tot})`;
+  } else if(v==='meetings'){
+    document.getElementById('view-title').textContent='';
+    showTab('meetings'); renderMeetings();
+  } else {
+    document.getElementById('view-title').textContent='';
+    showTab(v);
+  }
+}
+function showTab(t){document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));document.getElementById('view-'+t).classList.add('active')}
+function switchImportTab(t){
+  document.getElementById('tab-xlsx').classList.toggle('active',t==='xlsx');
+  document.getElementById('tab-csv').classList.toggle('active',t==='csv');
+  document.getElementById('import-xlsx-panel').style.display=t==='xlsx'?'':'none';
+  document.getElementById('import-csv-panel').style.display=t==='csv'?'':'none';
+}
+
+// ─── TABLE HEADER (dynamic, resizable, sortable) ───────────────────────────────
+function visibleCols(){
+  const isPersonal=currentYear==='personal';
+  return COLS_JURY.filter(c=>{
+    if(c.juryHide&&!isPersonal)return false;
+    if(!c.personal&&isPersonal)return false;
+    return true;
+  });
+}
+
+function buildTableHeader(){
+  const cols=visibleCols();
+  // Set column widths as CSS vars on the table for both thead and tbody to share
+  const tbl=document.getElementById('main-table');
+  if(tbl) cols.forEach((c,i)=>tbl.style.setProperty(`--cw${i}`,c.width+'px'));
+  // Build colgroup (sync both header and body)
+  const cgCols=cols.map(c=>`<col style="width:${c.width}px">`).join('');
+  const cg=document.getElementById('col-group');
+  if(cg) cg.innerHTML=cgCols;
+  const cgh=document.getElementById('col-group-header');
+  if(cgh) cgh.innerHTML=cgCols;
+  // Compensate header for body's scrollbar so columns align
+  requestAnimationFrame(()=>{
+    const scroll=document.getElementById('table-scroll');
+    const header=document.getElementById('table-header');
+    if(scroll&&header){
+      const sw=scroll.offsetWidth-scroll.clientWidth;
+      header.style.paddingRight=sw+'px';
+    }
+  });
+  // Build thead
+  const tr=document.getElementById('thead-row');
+  tr.innerHTML=cols.map((c,idx)=>{
+    const sortClass=c.sort?'sortable':'';
+    const sortState=sortCol===c.key?(sortDir===1?'sort-asc':'sort-desc'):'';
+    const sortIcon=c.sort?'<span class="sort-icon"></span>':'';
+    let label=c.label;
+    if(c.key==='watched') label='<i class="ti ti-eye" style="font-size:13px;vertical-align:middle"></i><i class="ti ti-eye-off" style="font-size:13px;vertical-align:middle;opacity:.3;margin-left:1px"></i>';
+    if(c.key==='country') label='<i class="ti ti-flag" style="font-size:13px;vertical-align:middle"></i>';
+    const noResize=c.key==='watched'||c.key==='actions'||c.key==='colour';
+    const resizeHandle=noResize?'':` <div class="resize-handle" data-idx="${idx}" onmousedown="startResize(event,${idx})"></div>`;
+    return `<th class="${sortClass} ${sortState}" data-col="${c.key}" style="position:relative;width:${c.width}px;${noResize?'padding:0;text-align:center;':''}">\
+<div class="th-inner">${label}${sortIcon}</div>${resizeHandle}</th>`;
+  }).join('');
+  // Sort click
+  tr.querySelectorAll('th.sortable').forEach(th=>{
+    th.addEventListener('click',e=>{
+      if(e.target.classList.contains('resize-handle'))return;
+      const col=th.dataset.col;
+      if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=1;}
+      buildTableHeader();renderTable();
+    });
+  });
+}
+
+// ─── COLUMN RESIZE ────────────────────────────────────────────────────────────
+let resizeState=null;
+function startResize(e,idx){
+  e.preventDefault();e.stopPropagation();
+  const cols=visibleCols();
+  resizeState={idx,startX:e.clientX,startW:cols[idx].width,colKey:cols[idx].key};
+  document.addEventListener('mousemove',doResize);
+  document.addEventListener('mouseup',stopResize);
+}
+function doResize(e){
+  if(!resizeState)return;
+  const dx=e.clientX-resizeState.startX;
+  const newW=Math.max(40,resizeState.startW+dx);
+  const col=COLS_JURY.find(c=>c.key===resizeState.colKey);
+  if(col)col.width=newW;
+  const cols=visibleCols();
+  const vIdx=cols.findIndex(c=>c.key===resizeState.colKey);
+  const cg=document.getElementById('col-group');
+  if(cg&&cg.children[vIdx])cg.children[vIdx].style.width=newW+'px';
+  const cgh=document.getElementById('col-group-header');
+  if(cgh&&cgh.children[vIdx])cgh.children[vIdx].style.width=newW+'px';
+  const ths=document.getElementById('thead-row').children;
+  if(ths[vIdx])ths[vIdx].style.width=newW+'px';
+}
+function stopResize(){resizeState=null;document.removeEventListener('mousemove',doResize);document.removeEventListener('mouseup',stopResize);}
+
+// ─── FILTERING & SORTING ──────────────────────────────────────────────────────
+function getFiltered(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const fc=document.getElementById('filter-colour').value;
+  const fw=document.getElementById('filter-watched').value;
+  const ft=document.getElementById('filter-tag').value;
+  let list=films.filter(f=>{
+    if(currentYear&&currentComp){
+      if(currentYear==='personal'){if(f.festyear!=='personal')return false;}
+      else{if(f.festyear!==currentYear||f.competition!==currentComp)return false;}
+    }
+    if(q&&!((f.title||'').toLowerCase().includes(q)||(f.director||'').toLowerCase().includes(q)||(f.country||'').toLowerCase().includes(q)||(f.venue||'').toLowerCase().includes(q)))return false;
+    if(fc&&f.colour!==fc)return false;
+    if(fw==='yes'&&!isWatched(f))return false;
+    if(fw==='no'&&isWatched(f))return false;
+    if(ft&&!(f.tags||[]).includes(ft))return false;
+    return true;
+  });
+  if(sortCol){
+    list=[...list].sort((a,b)=>{
+      let va,vb;
+      if(sortCol==='watched'){va=isWatched(a)?1:0;vb=isWatched(b)?1:0;}
+      else if(sortCol==='rating'){va=a.rating||0;vb=b.rating||0;}
+      else if(sortCol==='year'){va=parseInt(a.year)||0;vb=parseInt(b.year)||0;}
+      else if(sortCol==='duration'){va=parseFloat(a.duration)||0;vb=parseFloat(b.duration)||0;}
+      else if(sortCol==='colour'){const o={green:0,yellow:1,red:2,'':3};va=o[a.colour||'']??3;vb=o[b.colour||'']??3;}
+      else if(sortCol==='section'){va=(a.festyear||'')+(a.competition||'');vb=(b.festyear||'')+(b.competition||'');}
+      else{va=(a[sortCol]||'').toLowerCase();vb=(b[sortCol]||'').toLowerCase();}
+      if(va<vb)return -1*sortDir;if(va>vb)return 1*sortDir;return 0;
+    });
+  }
+  return list;
+}
+
+// ─── SECTION BADGE (no year box) ─────────────────────────────────────────────
+function sectionBadge(f){
+  if(f.festyear==='personal')return `<span class="badge b-personal">${t('personal_badge')}</span>`;
+  const cls={International:'b-intl','Cinema Falado':'b-falado','Short/Medium':'b-short'}[f.competition]||'';
+  const lbl={International:'Inter.','Cinema Falado':'CinFal.','Short/Medium':'Med-Cur.'}[f.competition]||f.competition;
+  return `<span class="badge ${cls}">${lbl}</span><span class="yr-label ${cls}">${f.festyear}</span>`;
+}
+
+// ─── COUNTRY FLAGS ────────────────────────────────────────────────────────────
+const CF={'afghanistan':'🇦🇫','albania':'🇦🇱','algeria':'🇩🇿','angola':'🇦🇴','argentina':'🇦🇷','armenia':'🇦🇲','australia':'🇦🇺','austria':'🇦🇹','azerbaijan':'🇦🇿','bangladesh':'🇧🇩','belgium':'🇧🇪','bolivia':'🇧🇴','bosnia':'🇧🇦','bosnia and herzegovina':'🇧🇦','botswana':'🇧🇼','brazil':'🇧🇷','brasil':'🇧🇷','bulgaria':'🇧🇬','burkina faso':'🇧🇫','cambodia':'🇰🇭','cameroon':'🇨🇲','canada':'🇨🇦','cape verde':'🇨🇻','chile':'🇨🇱','china':'🇨🇳','colombia':'🇨🇴','congo':'🇨🇩','democratic republic of congo':'🇨🇩','croatia':'🇭🇷','cuba':'🇨🇺','cyprus':'🇨🇾','czech republic':'🇨🇿','czechia':'🇨🇿',"côte d'ivoire":'🇨🇮','ivory coast':'🇨🇮','denmark':'🇩🇰','dominican republic':'🇩🇴','ecuador':'🇪🇨','egypt':'🇪🇬','estonia':'🇪🇪','finland':'🇫🇮','france':'🇫🇷','frança':'🇫🇷','georgia':'🇬🇪','germany':'🇩🇪','ghana':'🇬🇭','greece':'🇬🇷','greenland':'🇬🇱','guatemala':'🇬🇹','guinea-bissau':'🇬🇼','hong kong':'🇭🇰','hungary':'🇭🇺','iceland':'🇮🇸','india':'🇮🇳','indonesia':'🇮🇩','iran':'🇮🇷','iraq':'🇮🇶','ireland':'🇮🇪','israel':'🇮🇱','italy':'🇮🇹','japan':'🇯🇵','kazakhstan':'🇰🇿','kenya':'🇰🇪','korea, republic of':'🇰🇷','south korea':'🇰🇷','kosovo':'🇽🇰','kyrgyzstan':'🇰🇬','latvia':'🇱🇻','lebanon':'🇱🇧','lesotho':'🇱🇸','libya':'🇱🇾','lithuania':'🇱🇹','luxembourg':'🇱🇺','macao':'🇲🇴','malaysia':'🇲🇾','mali':'🇲🇱','martinique':'🇲🇶','mexico':'🇲🇽','méxico':'🇲🇽','moldova':'🇲🇩','mongolia':'🇲🇳','montenegro':'🇲🇪','myanmar':'🇲🇲','nepal':'🇳🇵','netherlands':'🇳🇱','new zealand':'🇳🇿','niger':'🇳🇪','nigeria':'🇳🇬','north macedonia':'🇲🇰','norway':'🇳🇴','pakistan':'🇵🇰','palestine':'🇵🇸','palestine, state of':'🇵🇸','paraguay':'🇵🇾','peru':'🇵🇪','philippines':'🇵🇭','poland':'🇵🇱','polónia':'🇵🇱','portugal':'🇵🇹','puerto rico':'🇵🇷','qatar':'🇶🇦','republic of korea':'🇰🇷','romania':'🇷🇴','russia':'🇷🇺','russian federation':'🇷🇺','rwanda':'🇷🇼','saudi arabia':'🇸🇦','senegal':'🇸🇳','serbia':'🇷🇸','sérvia':'🇷🇸','sierra leone':'🇸🇱','singapore':'🇸🇬','slovakia':'🇸🇰','eslovénia':'🇸🇮','slovenia':'🇸🇮','south africa':'🇿🇦','spain':'🇪🇸','sri lanka':'🇱🇰','sudan':'🇸🇩','suriname':'🇸🇷','sweden':'🇸🇪','switzerland':'🇨🇭','syria':'🇸🇾','taiwan':'🇹🇼','tanzania':'🇹🇿','thailand':'🇹🇭','tunisia':'🇹🇳','turkey':'🇹🇷','uganda':'🇺🇬','ukraine':'🇺🇦','united arab emirates':'🇦🇪','united kingdom':'🇬🇧','united states':'🇺🇸','usa':'🇺🇸','u.s.a.':'🇺🇸','estados unidos':'🇺🇸','uruguay':'🇺🇾','vietnam':'🇻🇳','zimbabwe':'🇿🇼'};
+function countryToFlags(raw){
+  if(!raw||!raw.trim())return'';
+  const parts=raw.split(/,|&|;/).map(s=>s.trim().replace(/^\s*e\s+/i,'').trim()).filter(Boolean);
+  const flags=[...new Set(parts.map(p=>CF[p.toLowerCase().trim()]||null).filter(Boolean))];
+  if(!flags.length)return`<span style="font-size:11px;color:var(--text-tertiary)">${raw.split(/,|&/)[0].trim().slice(0,12)}</span>`;
+  return flags.slice(0,4).join('')+(flags.length>4?`<span style="font-size:10px;color:var(--text-tertiary)"> +${flags.length-4}</span>`:'');
+}
+
+// ─── RENDER TABLE ─────────────────────────────────────────────────────────────
+function clearFilters(){
+  document.getElementById('filter-watched').value='';
+  document.getElementById('filter-colour').value='';
+  document.getElementById('filter-tag').value='';
+  document.getElementById('search-input').value='';
+  updateClearBtn();renderTable();
+}
+function updateClearBtn(){
+  const active=document.getElementById('filter-watched').value||
+    document.getElementById('filter-colour').value||
+    document.getElementById('filter-tag').value||
+    document.getElementById('search-input').value;
+  const btn=document.getElementById('btn-clear-filters');
+  if(btn)btn.style.display=active?'':'none';
+}
+function renderTable(){
+  const list=getFiltered();
+  const isPersonal=currentYear==='personal';
+  // Update title with watched/total count
+  if(currentYear&&currentComp){
+    const sectionFilms=films.filter(f=>isPersonal?f.festyear==='personal':(f.festyear===currentYear&&f.competition===currentComp));
+    const tot=sectionFilms.length;
+    const watched=isPersonal?sectionFilms.filter(f=>f.date).length:sectionFilms.filter(isWatched).length;
+    const labels={International:t('International'),'Cinema Falado':t('Cinema Falado'),'Short/Medium':t('Short/Medium'),Cinema:t('Cinema outings')};
+    const lbl=(isPersonal?t('personal')+' — ':currentYear+' — ')+(labels[currentComp]||currentComp);
+    const countStr=isPersonal?`${tot} films`:(`${watched}/${tot}`);
+    document.getElementById('view-title').textContent=`${lbl} (${countStr})`;
+  }
+  const tbody=document.getElementById('films-tbody');
+  const empty=document.getElementById('empty-state');
+  const cols=visibleCols();
+  if(!list.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=list.map(f=>{
+    const watched=isWatched(f);
+    const rowClass=(!isPersonal&&!watched)?'class="unseen-row"':'';
+    const cells=cols.map(c=>{
+      switch(c.key){
+        case 'watched':
+          return watched
+            ? `<td style="text-align:center"><i class="ti ti-eye" style="font-size:14px;color:var(--text-secondary)"></i></td>`
+            : `<td style="text-align:center"><i class="ti ti-eye-off" style="font-size:14px;color:var(--border-medium)"></i></td>`;
+        case 'title':
+          return `<td title="${(f.title||'').replace(/"/g,'&quot;')}">${f.title||'—'}</td>`;
+        case 'director':
+          return `<td title="${(f.director||'').replace(/"/g,'&quot;')}">${f.director||'—'}</td>`;
+        case 'country':
+          return `<td class="flag-cell" title="${(f.country||'').replace(/"/g,'&quot;')}">${countryToFlags(f.country)||'—'}</td>`;
+        case 'year':
+          return `<td style="color:var(--text-secondary)">${f.year||'—'}</td>`;
+        case 'duration':
+          return `<td style="color:var(--text-secondary)">${f.duration?f.duration+'′':'—'}</td>`;
+        case 'rating':
+          return f.rating
+            ? `<td><span style="font-weight:500">${f.rating}</span><span style="color:var(--text-tertiary)">/10</span></td>`
+            : `<td><span style="color:var(--text-tertiary);font-size:12px">${isPersonal?'—':'—'}</span></td>`;
+        case 'colour':{
+          const dot=f.colour?`<span class="dot dot-${f.colour}"></span>`:'<span class="dot dot-unseen"></span>';
+          return `<td style="text-align:center">${dot}</td>`;
+        }
+        case 'tags':{
+          const tags=(f.tags||[]);
+          const html=tags.map(t=>{
+            const cls=t==='urgent'?'tag-urgent':t==='approved'?'tag-approved':'tag-viewed';
+            const lbl=t==='viewed by others'?'viewed by others':t.charAt(0).toUpperCase()+t.slice(1);
+            return `<span class="badge ${cls}" style="margin-right:2px">${lbl}</span>`;
+          }).join('');
+          return `<td>${html}</td>`;
+        }
+        case 'section':
+          return `<td>${sectionBadge(f)}</td>`;
+        case 'venue':
+          return `<td title="${(f.venue||'').replace(/"/g,'&quot;')}">${f.venue||'—'}</td>`;
+        case 'actions':
+          return `<td><div class="row-actions">
+            <button class="icon-btn" onclick='openEdit("${f.id}")' title="Edit"><i class="ti ti-edit"></i></button>
+            <button class="icon-btn" onclick='delFilm("${f.id}")' title="Delete"><i class="ti ti-trash"></i></button>
+          </div></td>`;
+        default: return '<td>—</td>';
+      }
+    }).join('');
+    return `<tr ${rowClass}>${cells}</tr>`;
+  }).join('');
+}
+
+function renderGlobalStats(){
+  const sections={};
+  films.forEach(f=>{
+    const key=f.festyear==='personal'?t('personal'):f.festyear+' — '+f.competition;
+    if(!sections[key])sections[key]={total:0,watched:0};
+    sections[key].total++;if(isWatched(f))sections[key].watched++;
+  });
+  const rows=Object.entries(sections).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border-light)">
+      <span>${k}</span><span style="color:var(--text-tertiary)">${v.watched}/<span style="font-weight:500;color:var(--text-primary)">${v.total}</span> watched</span>
+    </div>`).join('');
+  document.getElementById('global-stats').innerHTML=rows||'<div style="color:var(--text-tertiary);padding-top:6px">No films yet.</div>';
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function onFestYearChange(){
+  const isP=document.getElementById('f-festyear').value==='personal';
+  document.getElementById('venue-field').style.display=isP?'':'none';
+  document.getElementById('jury-fields').style.display=isP?'none':'';
+  document.getElementById('comp-field').style.display=isP?'none':'';
+  if(isP)updateVenueSuggestions();
+}
+function buildRating(){
+  document.getElementById('rating-row').innerHTML=Array.from({length:10},(_,i)=>{
+    const n=i+1;return `<button class="rating-btn${ratingSel===n?' selected':''}" onclick="selectRating(${n})">${n}</button>`;
+  }).join('');
+}
+function selectColour(c){colourSel=colourSel===c?'':c;['green','yellow','red'].forEach(x=>document.getElementById('cb-'+x).classList.toggle('selected',colourSel===x));}
+function selectRating(n){ratingSel=ratingSel===n?0:n;buildRating();}
+function toggleTag(t){
+  const i=tagsSel.indexOf(t);if(i>-1)tagsSel.splice(i,1);else tagsSel.push(t);
+  ['urgent','approved'].forEach(x=>document.getElementById('tb-'+x).classList.toggle('selected',tagsSel.includes(x)));
+}
+function openAddModal(){
+  document.getElementById('modal-title').textContent=t('add_film_title');
+  document.getElementById('edit-id').value='';
+  ['title','director','country','duration','year','category','synopsis','note','venue'].forEach(k=>{const el=document.getElementById('f-'+k);if(el)el.value='';});
+  document.getElementById('f-date').value='';
+  document.getElementById('f-festyear').value=currentYear==='personal'?'personal':(currentYear||'2026');
+  document.getElementById('f-competition').value=currentComp&&currentComp!=='Cinema'?currentComp:'';
+  colourSel='';ratingSel=0;tagsSel=[];
+  ['green','yellow','red'].forEach(x=>document.getElementById('cb-'+x).classList.remove('selected'));
+  ['urgent','approved'].forEach(x=>document.getElementById('tb-'+x).classList.remove('selected'));
+  onFestYearChange();buildRating();document.getElementById('film-modal').classList.add('open');
+}
+function openEdit(id){
+  const f=films.find(x=>x.id===id);if(!f)return;
+  document.getElementById('modal-title').textContent=t('edit_film_title');
+  document.getElementById('edit-id').value=id;
+  ['title','director','country','duration','year','category','synopsis','note','venue'].forEach(k=>{const el=document.getElementById('f-'+k);if(el)el.value=f[k]||'';});
+  document.getElementById('f-date').value=f.date||'';
+  document.getElementById('f-festyear').value=f.festyear||'2026';
+  document.getElementById('f-competition').value=f.competition||'';
+  colourSel=f.colour||'';ratingSel=f.rating||0;tagsSel=[...(f.tags||[])];
+  ['green','yellow','red'].forEach(x=>document.getElementById('cb-'+x).classList.toggle('selected',colourSel===x));
+  ['urgent','approved'].forEach(x=>document.getElementById('tb-'+x).classList.toggle('selected',tagsSel.includes(x)));
+  onFestYearChange();buildRating();document.getElementById('film-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('film-modal').classList.remove('open');}
+function saveFilm(){
+  const id=document.getElementById('edit-id').value;
+  const festyear=document.getElementById('f-festyear').value;
+  const isPersonal=festyear==='personal';
+  const f={id:id||uid(),title:document.getElementById('f-title').value.trim(),director:document.getElementById('f-director').value.trim(),country:document.getElementById('f-country').value.trim(),duration:document.getElementById('f-duration').value,year:document.getElementById('f-year').value,festyear,competition:isPersonal?'Cinema':document.getElementById('f-competition').value,category:document.getElementById('f-category').value.trim(),venue:isPersonal?document.getElementById('f-venue').value.trim():'',synopsis:document.getElementById('f-synopsis').value.trim(),date:document.getElementById('f-date').value,colour:isPersonal?'':colourSel,rating:isPersonal?0:ratingSel,tags:isPersonal?[]:tagsSel.slice(),note:document.getElementById('f-note').value.trim(),_updated:Date.now()};
+  if(!f.title){alert('Title is required.');return;}
+  if(id){const idx=films.findIndex(x=>x.id===id);if(idx>-1)films[idx]=f;}else films.unshift(f);
+  save();closeModal();renderTable();
+}
+function delFilm(id){if(!confirm('Remove this film?'))return;films=films.filter(f=>f.id!==id);save();renderTable();}
+document.getElementById('film-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ─── XLSX IMPORT ──────────────────────────────────────────────────────────────
+function handleXlsx(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      xlsxWorkbook=XLSX.read(e.target.result,{type:'array',cellHTML:false});
+      // Find all sheets with a valid header
+      const validSheets=[];
+      for(const name of xlsxWorkbook.SheetNames){
+        const ws2=xlsxWorkbook.Sheets[name];
+        const ref=ws2['!ref'];if(!ref)continue;
+        const range=XLSX.utils.decode_range(ref);
+        const nRows=range.e.r-range.s.r+1;
+        let hasHeader=false;
+        for(let r=range.s.r;r<=Math.min(range.s.r+7,range.e.r);r++){
+          const cell=ws2[XLSX.utils.encode_cell({r,c:2})];
+          if(cell&&['title','filme'].includes(String(cell.v||'').trim().toLowerCase())){hasHeader=true;break;}
+        }
+        if(hasHeader) validSheets.push({name,nRows});
+      }
+      // Default to largest sheet
+      validSheets.sort((a,b)=>b.nRows-a.nRows);
+      xlsxSheetName=validSheets.length?validSheets[0].name:xlsxWorkbook.SheetNames[0];
+      // Build sheet selector
+      const sheetOpts=validSheets.map(s=>`<option value="${s.name}"${s.name===xlsxSheetName?' selected':''}>${s.name} (${s.nRows} rows)</option>`).join('');
+      document.getElementById('xlsx-preview').style.display='block';
+      document.getElementById('xlsx-preview').innerHTML=`<strong>${file.name}</strong><br><div style="margin-top:8px;display:flex;align-items:center;gap:8px"><label style="font-size:12px;color:var(--text-secondary);flex-shrink:0">Sheet:</label><select id="xlsx-sheet-select" style="flex:1;font-size:12px;padding:4px 8px" onchange="xlsxSheetName=this.value">${sheetOpts}</select></div>`;
+      document.getElementById('xlsx-config').style.display='block';
+      document.getElementById('xlsx-result').textContent='';
+    }catch(err){
+      document.getElementById('xlsx-preview').style.display='block';
+      document.getElementById('xlsx-preview').innerHTML=`<span style="color:var(--red-text)">Could not read: ${err.message}</span>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseEcValue(v){
+  if(v===null||v===undefined||v==='')return 0;
+  if(typeof v==='string'){if(v.startsWith('=')||isNaN(parseFloat(v.replace(',','.'))))return 0;v=parseFloat(v.replace(',','.'));}
+  if(typeof v!=='number'||isNaN(v)||v<=0)return 0;
+  return Math.min(10,Math.max(1,Math.round(v)));
+}
+
+function doXlsxImport(){
+  if(!xlsxWorkbook||!xlsxSheetName)return;
+  const festyear=document.getElementById('xlsx-year').value;
+  const comp=document.getElementById('xlsx-competition').value;
+  const mode=document.getElementById('xlsx-mode').value;
+  const ws=xlsxWorkbook.Sheets[xlsxSheetName];
+  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null,blankrows:true});
+
+  // Auto-detect header row and EC column index
+  let headerRow=-1;
+  for(let i=0;i<Math.min(aoa.length,8);i++){
+    const c2=aoa[i]&&aoa[i][2]?String(aoa[i][2]).trim().toLowerCase():'';
+    if(c2==='title'||c2==='filme'){headerRow=i;break;}
+  }
+  let COL={title:2,director:3,country:4,duration:5,year:6,category:7,ec:16};
+  let OTHER_JURY=[13,14,15,17,18,19];
+  if(headerRow>=0){
+    const hrow=aoa[headerRow];
+    const ecIdx=hrow.findIndex((v,i)=>i>10&&v&&String(v).trim().toUpperCase()==='EC');
+    if(ecIdx>0){
+      COL={...COL,ec:ecIdx};
+      OTHER_JURY=hrow.map((v,i)=>({v,i})).filter(({v,i})=>i>=13&&i!==ecIdx&&v&&/^[A-Z]{2,3}$/.test(String(v).trim())).map(({i})=>i);
+    }
+  }
+  const dataStart=headerRow>=0?headerRow+1:4;
+
+  const pw=document.getElementById('xlsx-progress-wrap');
+  const pb=document.getElementById('xlsx-progress');
+  pw.style.display='block';pb.style.width='0%';
+  let added=0,skipped=0,updated=0;
+  let state='normal';
+  const total=aoa.length;
+
+  for(let i=dataStart;i<total;i++){
+    pb.style.width=Math.round((i/total)*100)+'%';
+    const row=aoa[i];if(!row)continue;
+    const colA=row[0];
+    const colC=row[COL.title];
+    const colCStr=colC!==null&&colC!==undefined?String(colC).trim():'';
+    const colCLow=colCStr.toLowerCase();
+    const ecRaw=row[COL.ec];
+    const ecIsFormula=typeof ecRaw==='string'&&(ecRaw.startsWith('=')||ecRaw==='EC');
+    const ecVal=ecIsFormula?0:parseEcValue(ecRaw);
+
+    if(STRUCTURAL_C.has(colCLow))continue;
+
+    // A row is a film row if it has director OR country data, OR has an EC rating.
+    // Section headers only have a title in col C, nothing else.
+    const hasDirector=row[COL.director]!=null&&String(row[COL.director]).trim()!=='';
+    const hasCountry=row[COL.country]!=null&&String(row[COL.country]).trim()!=='';
+    const isFilmRow=hasDirector||hasCountry||ecVal>0;
+
+    if(!isFilmRow){
+      if(SKIP_PEOPLE_ALL.has(colCLow)){state='skipping';continue;}
+      if(MY_SECTIONS.has(colCLow)){state='mine';continue;}
+      if(state==='mine'&&MY_SECTION_STOP.has(colCLow)){state='normal';continue;}
+      if(RESUME_TRIGGERS.some(t=>colCLow.startsWith(t.slice(0,12)))){state='normal';}
+      if(state==='skipping'&&!SKIP_PEOPLE_ALL.has(colCLow)&&!MY_SECTIONS.has(colCLow)){state='normal';}
+      continue;
+    }
+
+    if(state==='skipping')continue;
+    if(!colCStr)continue;
+    if(mode==='watched'&&ecVal===0)continue;
+
+    const title=colCStr;
+    const director=row[COL.director]!=null?String(row[COL.director]).trim():'';
+    const country=row[COL.country]!=null?String(row[COL.country]).trim():'';
+    const duration=row[COL.duration]!=null?String(row[COL.duration]).trim():'';
+    const year=row[COL.year]!=null&&!isNaN(Number(row[COL.year]))?String(Math.round(Number(row[COL.year]))).trim():'';
+    const category=row[COL.category]!=null?String(row[COL.category]).trim():'';
+    const seenByOthers=OTHER_JURY.some(c=>{const v=row[c];return v!==null&&v!==undefined&&typeof v==='number'&&v>0;});
+    const autoTags=seenByOthers?['viewed by others']:[];
+
+    const existing=films.find(f=>f.title.toLowerCase()===title.toLowerCase()&&(f.director||'').toLowerCase()===director.toLowerCase()&&f.festyear===festyear&&f.competition===comp);
+    if(existing){
+      if(ecVal>0&&!existing.rating){existing.rating=ecVal;existing._updated=Date.now();updated++;}
+      if(seenByOthers&&!(existing.tags||[]).includes('viewed by others')){existing.tags=[...(existing.tags||[]).filter(t=>t!=='viewed by others'),'viewed by others'];existing._updated=Date.now();}
+      if(ecVal===0&&!seenByOthers)skipped++;
+      continue;
+    }
+    films.push({id:uid(),title,director,country,duration,year,festyear,competition:comp,category,venue:'',synopsis:'',date:'',colour:'',rating:ecVal,tags:autoTags,note:'',_updated:Date.now()});
+    added++;
+  }
+  pb.style.width='100%';
+  save();
+  const parts=[`✓ ${added} ${t('imported')}`];
+  if(updated)parts.push(`${updated} ${t('ratings_updated')}`);
+  if(skipped)parts.push(`${skipped} ${t('already_in_lib')}`);
+  document.getElementById('xlsx-result').innerHTML=`<span style="color:var(--green-text)">${parts.join(' · ')}</span> <button class="btn btn-sm" style="margin-left:8px" onclick="resetXlsxImport();setSection('${festyear}','${comp}')">${t('go_to_section')}</button>`;
+}
+
+function resetXlsxImport(){
+  xlsxWorkbook=null;xlsxSheetName=null;
+  document.getElementById('xlsx-file').value='';
+  document.getElementById('xlsx-preview').style.display='none';
+  document.getElementById('xlsx-config').style.display='none';
+  document.getElementById('xlsx-result').textContent='';
+  document.getElementById('xlsx-progress-wrap').style.display='none';
+  document.getElementById('xlsx-progress').style.width='0%';
+}
+
+const dzXlsx=document.getElementById('drop-zone-xlsx');
+dzXlsx.addEventListener('dragover',e=>{e.preventDefault();dzXlsx.classList.add('drag-over')});
+dzXlsx.addEventListener('dragleave',()=>dzXlsx.classList.remove('drag-over'));
+dzXlsx.addEventListener('drop',e=>{e.preventDefault();dzXlsx.classList.remove('drag-over');const file=e.dataTransfer.files[0];if(file&&(file.name.endsWith('.xlsx')||file.name.endsWith('.xls'))){const inp=document.getElementById('xlsx-file');const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;handleXlsx(inp);}});
+
+// ─── CSV IMPORT ───────────────────────────────────────────────────────────────
+function detectCsvCol(h){const lh=h.toLowerCase().trim();for(const[field,aliases]of Object.entries(KNOWN_CSV)){if(aliases.some(a=>lh===a||lh.includes(a)))return field;}return'';}
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return{headers:[],rows:[]};
+  const sep=lines[0].includes(';')?';':',';
+  const parseRow=row=>{const res=[];let cur='',inQ=false;for(let i=0;i<row.length;i++){const c=row[i];if(c==='"'){inQ=!inQ;}else if(c===sep&&!inQ){res.push(cur.trim());cur='';}else cur+=c;}res.push(cur.trim());return res;};
+  const headers=parseRow(lines[0]);
+  return{headers,rows:lines.slice(1).map(l=>{const cols=parseRow(l);const obj={};headers.forEach((h,i)=>obj[h]=cols[i]||'');return obj;})};
+}
+function handleCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{const p=parseCSV(e.target.result);csvHeaders=p.headers;csvRows=p.rows;document.getElementById('csv-filename').textContent=file.name;document.getElementById('csv-summary').textContent=`${csvRows.length} rows, ${csvHeaders.length} columns`;buildMappingTable();document.getElementById('mapping-area').style.display='block';};
+  reader.readAsText(file,'UTF-8');
+}
+function buildMappingTable(){
+  const appFields=['title','director','country','duration','year','competition','category','synopsis','date','ec'];
+  const labels={title:'Title',director:'Director',country:'Country',duration:'Duration',year:'Prod. year',competition:'Competition',category:'Category',synopsis:'Synopsis',date:'Viewing date',ec:'EC (your rating)'};
+  const tbl=document.getElementById('map-table');
+  tbl.innerHTML=`<tr><th>App field</th><th>CSV column</th></tr>`;
+  appFields.forEach(field=>{
+    const detected=csvHeaders.find(h=>{if(field==='ec'){const lh=h.toLowerCase().trim();return lh==='ec'||lh.startsWith('ec ')||lh.endsWith(' ec');}return detectCsvCol(h)===field;})||'';
+    const opts=`<option value="">— skip —</option>`+csvHeaders.map(h=>`<option value="${h}"${h===detected?' selected':''}>${h}</option>`).join('');
+    tbl.innerHTML+=`<tr><td>${labels[field]}</td><td><select id="map-${field}">${opts}</select></td></tr>`;
+  });
+}
+function doCSVImport(){
+  const festyear=document.getElementById('import-year').value;
+  const comp=document.getElementById('import-competition').value;
+  const appFields=['title','director','country','duration','year','competition','category','synopsis','date','ec'];
+  const mapping={};appFields.forEach(f=>{mapping[f]=document.getElementById('map-'+f).value;});
+  let added=0,skipped=0,updated=0;
+  csvRows.forEach(row=>{
+    const title=(mapping.title?row[mapping.title]||'':'').trim();
+    const director=(mapping.director?row[mapping.director]||'':'').trim();
+    if(!title)return;
+    const ecRaw=mapping.ec?row[mapping.ec]||'':'';
+    const rating=parseEcValue(ecRaw);
+    const existing=films.find(f=>f.title.toLowerCase()===title.toLowerCase()&&(f.director||'').toLowerCase()===director.toLowerCase()&&f.festyear===festyear&&f.competition===comp);
+    if(existing){if(rating>0&&!existing.rating){existing.rating=rating;existing._updated=Date.now();updated++;}else skipped++;return;}
+    films.push({id:uid(),title,director,country:mapping.country?row[mapping.country]||'':'',duration:mapping.duration?row[mapping.duration]||'':'',year:mapping.year?row[mapping.year]||'':'',festyear,competition:mapping.competition?row[mapping.competition]||comp:comp,category:mapping.category?row[mapping.category]||'':'',venue:'',synopsis:mapping.synopsis?row[mapping.synopsis]||'':'',date:mapping.date?row[mapping.date]||'':'',colour:'',rating,tags:[],note:'',_updated:Date.now()});
+    added++;
+  });
+  save();
+  const parts=[`✓ ${added} imported`];if(updated)parts.push(`${updated} updated`);if(skipped)parts.push(`${skipped} skipped`);
+  document.getElementById('import-result').innerHTML=`<span style="color:var(--green-text)">${parts.join(' · ')}</span> <button class="btn btn-sm" style="margin-left:8px" onclick="resetCSVImport();setSection('${festyear}','${comp}')">${t('go_to_section')}</button>`;
+}
+function resetCSVImport(){csvRows=[];csvHeaders=[];document.getElementById('csv-file').value='';document.getElementById('mapping-area').style.display='none';document.getElementById('import-result').textContent='';}
+const dzCsv=document.getElementById('drop-zone-csv');
+dzCsv.addEventListener('dragover',e=>{e.preventDefault();dzCsv.classList.add('drag-over')});
+dzCsv.addEventListener('dragleave',()=>dzCsv.classList.remove('drag-over'));
+dzCsv.addEventListener('drop',e=>{e.preventDefault();dzCsv.classList.remove('drag-over');const file=e.dataTransfer.files[0];if(file&&file.name.endsWith('.csv')){const inp=document.getElementById('csv-file');const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;handleCSV(inp);}});
+
+// ─── EXPORT / BACKUP ──────────────────────────────────────────────────────────
+function getExportList(){const secVal=document.getElementById('export-section').value;if(!secVal)return films;const[fy,fc]=secVal.split('|');return films.filter(f=>f.festyear===fy&&f.competition===fc);}
+function exportJSON(){
+  const list=getExportList();if(!list.length){document.getElementById('export-info').textContent='Nothing to export.';return;}
+  const sec=document.getElementById('export-section').value||'all';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({exported:new Date().toISOString(),count:list.length,films:list},null,2)],{type:'application/json'}));
+  a.download=`jury_backup_${sec}_${new Date().toISOString().slice(0,10)}.json`;a.click();
+  document.getElementById('export-info').textContent=`${list.length} films exported.`;
+}
+function exportCSVData(){
+  const list=getExportList();if(!list.length){document.getElementById('export-info').textContent='Nothing to export.';return;}
+  const cols=['title','director','country','duration','year','festyear','competition','category','venue','synopsis','date','colour','rating','tags','note'];
+  const csv=[cols.join(','),...list.map(f=>cols.map(c=>c==='tags'?`"${(f.tags||[]).join(';')}"`:`"${String(f[c]||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const sec=document.getElementById('export-section').value||'all';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`jury_${sec}_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  document.getElementById('export-info').textContent=`${list.length} films exported.`;
+}
+function restoreJSON(input){
+  const file=input.files[0];if(!file)return;
+  const mode=document.getElementById('restore-mode').value;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      const incoming=Array.isArray(data)?data:(data.films||[]);
+      if(mode==='replace'){
+        if(!confirm(`Replace your entire library (${films.length} films) with ${incoming.length} films?`))return;
+        films=incoming.map(f=>({...f,id:f.id||uid()}));
+        save();renderGlobalStats();
+        document.getElementById('restore-info').textContent=`Done — library now has ${films.length} films.`;
+        return;
+      }
+      if(!incoming.length){document.getElementById('restore-info').textContent='No films found in file.';return;}
+      let added=0,skipped=0;
+      incoming.forEach(f=>{if(!f.title)return;const exists=films.some(x=>x.id===f.id||(x.title.toLowerCase()===(f.title||'').toLowerCase()&&x.festyear===f.festyear&&x.competition===f.competition));if(exists)skipped++;else{films.push({...f,id:f.id||uid()});added++;}});
+      document.getElementById('restore-info').textContent=`Merged: ${added} added, ${skipped} skipped.`;
+      save();renderGlobalStats();
+    }catch(err){document.getElementById('restore-info').textContent='Could not read file.';}
+  };
+  reader.readAsText(file,'UTF-8');input.value='';
+}
+
+// ─── MEETINGS ─────────────────────────────────────────────────────────────────
+let meetings = [];
+const MTG_KEY = 'jt_meetings';
+function saveMeetings(){ try{ localStorage.setItem(MTG_KEY, JSON.stringify(meetings)); }catch(e){} }
+function loadMeetings(){ try{ meetings = JSON.parse(localStorage.getItem(MTG_KEY)||'[]'); }catch(e){ meetings=[]; } }
+
+function renderMeetings(){
+  const sidebar = document.getElementById('sidebar-meetings-list');
+  const tab = document.getElementById('meetings-list');
+  const sorted = [...meetings].sort((a,b)=> (a.date+a.time) < (b.date+b.time) ? -1 : 1);
+  const now = new Date();
+
+  const sidebarHTML = sorted.length ? sorted.map(m => {
+    const dt = new Date(m.date + (m.time ? 'T'+m.time : ''));
+    const past = dt < now;
+    const dateStr = m.date ? new Date(m.date+'T12:00:00').toLocaleDateString('pt-PT',{day:'numeric',month:'short'}) : '—';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:var(--radius-md);opacity:${past?'.45':'1'}">
+      <div style="flex-shrink:0;font-size:11px;font-weight:500;color:var(--text-tertiary);min-width:36px">${dateStr}</div>
+      <div style="flex:1;min-width:0;font-size:12px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.time?m.time+' — ':''}${m.note||''}</div>
+      <div style="display:flex;gap:2px;flex-shrink:0">
+        <button class="icon-btn" style="padding:1px 4px;font-size:11px" onclick='openMeetingModal("${m.id}")'><i class="ti ti-edit"></i></button>
+        <button class="icon-btn" style="padding:1px 4px;font-size:11px" onclick='deleteMeeting("${m.id}")'><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('') : `<div style="font-size:12px;color:var(--text-tertiary);padding:6px 8px">${t('no_meetings')}</div>`;
+
+  if(sidebar) sidebar.innerHTML = sidebarHTML;
+  if(tab) tab.innerHTML = sidebarHTML;
+}
+
+function openMeetingModal(id){
+  if(id){
+    const m = meetings.find(x=>x.id===id); if(!m) return;
+    document.getElementById('meeting-modal-title').textContent = t('edit_meeting_title');
+    document.getElementById('meeting-edit-id').value = id;
+    document.getElementById('m-date').value = m.date||'';
+    document.getElementById('m-time').value = m.time||'';
+    document.getElementById('m-note').value = m.note||'';
+  } else {
+    document.getElementById('meeting-modal-title').textContent = t('add_meeting_title');
+    document.getElementById('meeting-edit-id').value = '';
+    document.getElementById('m-date').value = '';
+    document.getElementById('m-time').value = '';
+    document.getElementById('m-note').value = '';
+  }
+  document.getElementById('meeting-modal').classList.add('open');
+}
+function closeMeetingModal(){ document.getElementById('meeting-modal').classList.remove('open'); }
+function saveMeeting(){
+  const id = document.getElementById('meeting-edit-id').value;
+  const m = {
+    id: id||uid(),
+    date: document.getElementById('m-date').value,
+    time: document.getElementById('m-time').value,
+    note: document.getElementById('m-note').value.trim(),
+  };
+  if(!m.date){ alert('Date is required.'); return; }
+  if(id){ const idx=meetings.findIndex(x=>x.id===id); if(idx>-1) meetings[idx]=m; }
+  else meetings.push(m);
+  saveMeetings(); closeMeetingModal(); renderMeetings();
+}
+function deleteMeeting(id){
+  if(!confirm('Delete this meeting?')) return;
+  meetings = meetings.filter(m=>m.id!==id);
+  saveMeetings(); renderMeetings();
+}
+document.getElementById('meeting-modal').addEventListener('click', function(e){ if(e.target===this) closeMeetingModal(); });
+
+// ─── I18N & THEME ─────────────────────────────────────────────────────────────
+const TRANS={
+  pt:{
+    jury_2026:'2026 — JÚRI',jury_2025:'2025 — JÚRI',personal:'Pessoal',tools:'Ferramentas',
+    short_medium:'Curta / Média',cinema_outings:'Saídas ao Cinema',all_films:'Todos os filmes',
+    meetings:'Reuniões',import:'Importar',data_backup:'Dados & Cópia',
+    search_placeholder:'Pesquisar…',filter_all_films:'Todos',filter_watched:'Vistos',
+    filter_not_watched:'Não vistos',filter_all_verdicts:'Todos os veredictos',
+    filter_fits:'🟢 Adequado',filter_unclear:'🟡 Incerto',filter_unfit:'🔴 Inadequado',
+    filter_all_tags:'Todas as etiquetas',tag_urgent:'Urgente',tag_approved:'Aprovado',
+    tag_viewed_others:'Visto por outros',add_film:'Adicionar filme',
+    col_section:'Secção',col_title:'Título',col_director:'Realizador',col_year:'Ano',
+    col_dur:'Dur.',col_rating:'Nota',col_verdict:'Veredicto',col_tags:'Etiquetas',col_venue:'Sala',
+    no_films:'Nenhum filme encontrado.',add_meeting:'Adicionar reunião',
+    no_meetings:'Sem reuniões.',no_note:'Sem nota',clear_filters:'Limpar filtros',
+    import_xlsx_hint:'Coloca aqui a folha de cálculo do festival. Coluna EC = a tua nota.',
+    import_mode_watched:'Só os que vi (EC)',import_mode_all:'Todos os filmes',
+    import_btn:'Importar',cancel:'Cancelar',go_to_section:'Ir para a secção →',
+    festival_year:'Ano do festival',competition:'Competição',import_mode:'Modo de importação',
+    data_notice:'Os dados vivem no teu browser. Exporta regularmente um backup JSON.',
+    export_backup:'Exportar cópia de segurança',export_desc:'JSON preserva tudo. CSV é útil para Excel.',
+    full_library:'Biblioteca completa',restore_backup:'Restaurar cópia',
+    restore_desc:'Fusão adiciona novos filmes; Substituir apaga tudo.',
+    choose_json:'Escolher ficheiro JSON',merge:'Fusão',replace_all:'Substituir tudo',
+    library_overview:'Resumo da biblioteca',
+    add_film_title:'Adicionar filme',edit_film_title:'Editar filme',
+    title:'Título',director:'Realizador',country:'País',duration_min:'Duração (min)',
+    prod_year:'Ano de produção',fest_year:'Ano do festival',comp_label:'Competição',
+    category:'Categoria',venue:'Sala de cinema',synopsis:'Sinopse',
+    viewing_date:'Data de visionamento',verdict:'Veredicto',
+    fits:'🟢 Adequado',unclear:'🟡 Incerto',unfit:'🔴 Inadequado',
+    rating_ec:'Nota / EC (1–10)',tags_label:'Etiquetas',note:'Nota',save:'Guardar',
+    none:'— nenhuma —',add_meeting_title:'Adicionar reunião',edit_meeting_title:'Editar reunião',
+    date:'Data',time:'Hora',meeting_note:'Nota',
+    meeting_placeholder:'Ordem de trabalhos, local, tema…',
+    imported:'importados',ratings_updated:'notas atualizadas',already_in_lib:'já existentes',
+    watched:'Vistos',intl:'Intl',falado:'Falado',shortmed:'C/Méd',personal_badge:'Pessoal',
+    International:'Internacional','Cinema Falado':'Cinema Falado','Short/Medium':'Curta / Média',
+    'Cinema outings':'Saídas ao Cinema',
+    theme_light:'☀️ Claro',lang_label:'🇬🇧 EN',
+  },
+  en:{
+    jury_2026:'2026 — JURY',jury_2025:'2025 — JURY',personal:'Personal',tools:'Tools',
+    short_medium:'Short / Medium',cinema_outings:'Cinema outings',all_films:'All films',
+    meetings:'Meetings',import:'Import',data_backup:'Data & backup',
+    search_placeholder:'Search…',filter_all_films:'All films',filter_watched:'Watched',
+    filter_not_watched:'Not watched',filter_all_verdicts:'All verdicts',
+    filter_fits:'🟢 Fits',filter_unclear:'🟡 Unclear',filter_unfit:'🔴 Unfit',
+    filter_all_tags:'All tags',tag_urgent:'Urgent',tag_approved:'Approved',
+    tag_viewed_others:'Viewed by others',add_film:'Add film',
+    col_section:'Section',col_title:'Title',col_director:'Director',col_year:'Year',
+    col_dur:'Dur.',col_rating:'Rating',col_verdict:'Verdict',col_tags:'Tags',col_venue:'Venue',
+    no_films:'No films match.',add_meeting:'Add meeting',
+    no_meetings:'No meetings yet.',no_note:'No note',clear_filters:'Clear filters',
+    import_xlsx_hint:'Drop the festival spreadsheet. EC column = your rating.',
+    import_mode_watched:'Watched by me only (EC)',import_mode_all:'All films',
+    import_btn:'Import',cancel:'Cancel',go_to_section:'Go to section →',
+    festival_year:'Festival year',competition:'Competition',import_mode:'Import mode',
+    data_notice:'Data lives in your browser (localStorage). Export a JSON backup regularly.',
+    export_backup:'Export backup',export_desc:'JSON preserves everything. CSV is useful for Excel.',
+    full_library:'Full library',restore_backup:'Restore from backup',
+    restore_desc:'Merge adds new films; Replace overwrites everything.',
+    choose_json:'Choose JSON file',merge:'Merge',replace_all:'Replace everything',
+    library_overview:'Library overview',
+    add_film_title:'Add film',edit_film_title:'Edit film',
+    title:'Title',director:'Director',country:'Country',duration_min:'Duration (min)',
+    prod_year:'Production year',fest_year:'Festival year',comp_label:'Competition',
+    category:'Category',venue:'Cinema venue',synopsis:'Synopsis',
+    viewing_date:'Viewing date',verdict:'Verdict',
+    fits:'🟢 Fits',unclear:'🟡 Unclear',unfit:'🔴 Unfit',
+    rating_ec:'Rating / EC (1–10)',tags_label:'Tags',note:'Note',save:'Save',
+    none:'— none —',add_meeting_title:'Add meeting',edit_meeting_title:'Edit meeting',
+    date:'Date',time:'Time',meeting_note:'Note',
+    meeting_placeholder:'Agenda, location, topic…',
+    imported:'imported',ratings_updated:'ratings updated',already_in_lib:'already in library',
+    watched:'Watched',intl:'Intl',falado:'Falado',shortmed:'Short/Med',personal_badge:'Personal',
+    International:'International','Cinema Falado':'Cinema Falado','Short/Medium':'Short / Medium',
+    'Cinema outings':'Cinema outings',
+    theme_light:'☀️ Light',lang_label:'🇵🇹 PT',
+  }
+};
+
+let currentLang = localStorage.getItem('jt_lang')||'pt';
+// If the stored value is 'en' but there's no explicit user choice recorded, default to pt
+if(!localStorage.getItem('jt_lang_set')) { currentLang='pt'; }
+let currentTheme = localStorage.getItem('jt_theme')||'auto';
+
+function t(key){ return (TRANS[currentLang]||TRANS.pt)[key]||TRANS.en[key]||key; }
+
+function applyLang(){
+  // Update all data-t elements
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const key=el.getAttribute('data-t');
+    const val=t(key);
+    if(el.tagName==='OPTION') el.textContent=val;
+    else if(el.tagName==='LABEL') el.textContent=val;
+    else if(el.tagName==='BUTTON'&&!el.querySelector('i')&&!el.querySelector('span')) el.textContent=val;
+    else el.textContent=val;
+  });
+  // Placeholders
+  const si=document.getElementById('search-input');
+  if(si) si.placeholder=t('search_placeholder');
+  const mn=document.getElementById('m-note');
+  if(mn) mn.placeholder=t('meeting_placeholder');
+  // Column labels
+  COLS_JURY.forEach(c=>{
+    if(c.key==='section') c.label=t('col_section');
+    else if(c.key==='director') c.label=t('col_director');
+    else if(c.key==='year') c.label=t('col_year');
+    else if(c.key==='duration') c.label=t('col_dur');
+    else if(c.key==='rating') c.label=t('col_rating');
+    else if(c.key==='colour') c.label=t('col_verdict');
+    else if(c.key==='tags') c.label=t('col_tags');
+    else if(c.key==='venue') c.label=t('col_venue');
+  });
+  // Theme/lang button labels
+  const themeBtn=document.getElementById('theme-btn');
+  if(themeBtn) themeBtn.innerHTML=currentTheme==='dark'?'<i class="ti ti-sun"></i>':(currentTheme==='light'?'<i class="ti ti-moon"></i>':'<i class="ti ti-moon"></i>');
+  const langBtn=document.getElementById('lang-btn');
+  if(langBtn) langBtn.textContent=currentLang==='pt'?'EN':'PT';
+  // Re-render table headers and table to pick up new labels
+  buildTableHeader();
+  renderTable();
+  // Update sidebar section labels that are in nav item spans
+  document.querySelector('#n-2026-Short\\/Medium span') && (document.querySelector('#n-2026-Short\\/Medium span').textContent=t('short_medium'));
+  document.querySelector('#n-2025-Short\\/Medium span') && (document.querySelector('#n-2025-Short\\/Medium span').textContent=t('short_medium'));
+}
+
+function applyTheme(){
+  const html=document.documentElement;
+  html.classList.remove('dark','light');
+  if(currentTheme==='dark') html.classList.add('dark');
+  else if(currentTheme==='light') html.classList.add('light');
+  const themeBtn=document.getElementById('theme-btn');
+  if(themeBtn){
+    if(currentTheme==='dark') themeBtn.innerHTML='<i class="ti ti-sun"></i>';
+    else if(currentTheme==='light') themeBtn.innerHTML='<i class="ti ti-moon"></i>';
+    else themeBtn.innerHTML='<i class="ti ti-moon"></i>';
+  }
+}
+
+function toggleTheme(){
+  if(currentTheme==='auto'){
+    const sysDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+    currentTheme=sysDark?'light':'dark';
+  } else {
+    currentTheme=currentTheme==='dark'?'light':'dark';
+  }
+  localStorage.setItem('jt_theme',currentTheme);
+  applyTheme();applyLang();
+}
+
+function toggleLang(){
+  currentLang=currentLang==='pt'?'en':'pt';
+  localStorage.setItem('jt_lang',currentLang);
+  localStorage.setItem('jt_lang_set','1');
+  applyLang();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+load();
+loadMeetings();
+renderMeetings();
+applyTheme();
+buildTableHeader();
+(function(){
+  showView('all');
+})();
+applyLang();
+updateClearBtn();
+</script>
+</body>
+</html>
